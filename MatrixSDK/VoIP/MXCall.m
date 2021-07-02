@@ -483,7 +483,9 @@ NSString *const kMXCallSupportsTransferringStatusDidChange = @"kMXCallSupportsTr
         NSDictionary *content = @{
                                   @"call_id": _callId,
                                   @"version": kMXCallVersion,
-                                  @"party_id": self.partyId
+                                  @"party_id": self.partyId,
+                                  @"caller_id": self.callerId,
+                                  @"isVideo": @(_isVideoCall)
                                   };
         
         if (signal)
@@ -511,12 +513,19 @@ NSString *const kMXCallSupportsTransferringStatusDidChange = @"kMXCallSupportsTr
     if (self.state != MXCallStateEnded)
     {
         // Create the hangup event
-        NSDictionary *content = @{
-                                  @"call_id": _callId,
-                                  @"version": kMXCallVersion,
-                                  @"party_id": self.partyId,
-                                  @"reason": [MXTools callHangupReasonString:reason]
-                                  };
+        NSMutableDictionary *content = [NSMutableDictionary dictionaryWithDictionary:@{
+            @"call_id": _callId,
+            @"version": kMXCallVersion,
+            @"party_id": self.partyId,
+            @"caller_id": self.callerId,
+            @"isVideo": @(_isVideoCall),
+            @"reason": [MXTools callHangupReasonString:reason]
+        }];
+        
+        if (self.duration > 0) {
+            [content setObject:@(self.duration) forKey:@"duration"];
+        }
+        
         if (signal)
         {
             //  Send the hangup event
@@ -1597,6 +1606,9 @@ NSString *const kMXCallSupportsTransferringStatusDidChange = @"kMXCallSupportsTr
                         {
                             _endReason = MXCallEndReasonRemoteHangup;
                         }
+                        break;
+                    case MXCallHangupReasonUserBusy:
+                        _endReason = MXCallEndReasonRemoteLineBusy;
                         break;
                     case MXCallHangupReasonIceFailed:
                     case MXCallHangupReasonIceTimeout:

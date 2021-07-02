@@ -236,6 +236,7 @@ typedef void (^HandleOfferBlock)(dispatch_block_t);
 
     // The libjingle call object can now be created
     peerConnection = [peerConnectionFactory peerConnectionWithConfiguration:configuration constraints:constraints delegate:self];
+    [peerConnection setBweMinBitrateBps:nil currentBitrateBps:nil maxBitrateBps:@(1000000)];
     
 #if DEBUG
     statsTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 repeats:YES block:^(NSTimer * _Nonnull timer) {
